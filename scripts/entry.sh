@@ -56,7 +56,7 @@ echo "Database user '${MASTER_DBUSER}' is valid on host '${DBHOST}' on port '${D
 ## Check if database exists and create if it does not
 if [ "$(psql -lqt -U "${MASTER_DBUSER}" -d postgres -c "\\l" -h "${DBHOST}" -p "${DBPORT}" | cut -d \| -f 1 | grep -w "${DB_NAME}")" == "" ]; then
     echo "Creating database ${DB_NAME}"
-    sql=$(cat ${INIT_DIR}/000001_init.up.sql)
+    sql=$(cat ${INIT_DIR}/schema.sql)
     echo "inserting SQL '${sql}'"
     psql -U "${MASTER_DBUSER}" -d postgres -h "${DBHOST}" -p "${DBPORT}" <<EOF
     create database ${DB_NAME};
