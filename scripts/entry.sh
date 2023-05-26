@@ -48,29 +48,29 @@ else
     out "Generated new password ${DB_PASS}"
 fi
 ## Check if user is valid
-if !psql -U "${MASTER_DBUSER}" -d postgres -c "select 1" -h "${DBHOST}" -p "${DBPORT}" &>/dev/null; then
-    panic "Failed to connect to PostgreSQL at host ${DBHOST} on port ${DBPORT} with user ${MASTER_DBUSER}"
+if !psql -U "${MASTER_DBUSER}" -d postgres -c "select 1" -h "${DB_HOST}" -p "${DB_PORT}" &>/dev/null; then
+    panic "Failed to connect to PostgreSQL at host ${DB_HOST} on port ${DB_PORT} with user ${MASTER_DBUSER}"
 fi
-echo "Database user '${MASTER_DBUSER}' is valid on host '${DBHOST}' on port '${DBPORT}'"
+echo "Database user '${MASTER_DBUSER}' is valid on host '${DB_HOST}' on port '${DB_PORT}'"
 
 ## Check if database exists and create if it does not
-if [ "$(psql -lqt -U "${MASTER_DBUSER}" -d postgres -c "\\l" -h "${DBHOST}" -p "${DBPORT}" | cut -d \| -f 1 | grep -w "${DB_NAME}")" == "" ]; then
+if [ "$(psql -lqt -U "${MASTER_DBUSER}" -d postgres -c "\\l" -h "${DB_HOST}" -p "${DB_PORT}" | cut -d \| -f 1 | grep -w "${DB_NAME}")" == "" ]; then
     echo "Creating database ${DB_NAME}"
     sql=$(cat ${INIT_DIR}/schema.sql)
     echo "inserting SQL '${sql}'"
-    psql -U "${MASTER_DBUSER}" -d postgres -h "${DBHOST}" -p "${DBPORT}" <<EOF
+    psql -U "${MASTER_DBUSER}" -d postgres -h "${DB_HOST}" -p "${DB_PORT}" <<EOF
     create database ${DB_NAME};
     create user ${DB_USER} with password '${DB_PASS}';   
 EOF
     ## init tables.
     export PGPASSWORD="${DB_PASS}"
-    psql -U "${DB_USER}" -d "${DB_NAME}" -h "${DBHOST}" -p "${DBPORT}" <<EOF
+    psql -U "${DB_USER}" -d "${DB_NAME}" -h "${DB_HOST}" -p "${DB_PORT}" <<EOF
     ${sql}
 EOF
 else
     ## update user
     echo "Database ${DB_NAME} exist updating user"
-    psql -U "${MASTER_DBUSER}" -d postgres -h "${DBHOST}" -p "${DBPORT}" <<EOF
+    psql -U "${MASTER_DBUSER}" -d postgres -h "${DB_HOST}" -p "${DB_PORT}" <<EOF
         alter user ${DB_USER} with password '${DB_PASS}';
         grant all on database ${DB_NAME} to ${DB_USER};
 EOF
